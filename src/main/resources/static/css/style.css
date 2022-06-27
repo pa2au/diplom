@@ -1,0 +1,44 @@
+.month {
+    padding: 70px 25px;
+    width: 100%;
+    background: #1abc9c;
+    text-align: center;
+}
+
+.month ul {
+    margin: 0;
+    padding: 0;
+}
+
+.month ul li {
+    color: white;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.weekdays {
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 10px 0;
+    background-color: #ddd;
+}
+
+.weekdays li {
+    width: 200px;
+    color: #666;
+    text-align: center;
+}
+
+.active {
+    background: yellow;
+}
+
+.weekdays {
+    list-style-type: none;
+}
+
+.week-id:hover {
+    background: yellow;
+}

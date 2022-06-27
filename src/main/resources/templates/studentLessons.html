@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>Title</title>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <!--/*@thymesVar id="user" type="com.example.tametable.entity.User"*/-->
+    <div class="container">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <a class="navbar-brand" href="/student/lessons">Расписание</a>
+                <ul class="navbar-nav mb-2 mb-lg-0">
+
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item" th:text="${user.getUsername()}" style="line-height: 38px"></li>
+                    <li class="nav-item"><a class="nav-link" href="/logout">Выйти</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<ul class="weekdays" id="weekDays">
+    <li class="week-id" data-id="1">Понедельник
+    </li>
+    <li class="week-id" data-id="2">Вторник</li>
+    <li class="week-id" data-id="3">Среда</li>
+    <li class="week-id" data-id="4">Четверг
+    </li>
+    <li class="week-id" data-id="5">Пятница</li>
+    <li class="week-id" data-id="6">Суббота
+    </li>
+</ul>
+
+<div class="container">
+    <table class="table" id="lessons">
+        <thead>
+        <tr>
+            <th scope="col">Время</th>
+            <th scope="col">Название</th>
+            <th scope="col">Группа</th>
+            <th scope="col">Преподователь</th>
+            <th scope="col">Тип занятия</th>
+            <th scope="col">Неделя</th>
+            <th class="text-center" scope="col">Ссылки</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+</div>
+<input type="hidden" id="user-group-id" th:value="${userGroupId}">
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+        crossorigin="anonymous"></script>
+<script>
+    let groupId = $("#user-group-id").val()
+    let url = ""
+    $(document).ready(function () {
+        currentDay()
+        url = "https://lessons-api-university.herokuapp.com/api/all-lesson-by-week-groupId/" + $(".active").data("id") + "/" + groupId
+        renderLessons(url)
+    })
+
+    function currentDay() {
+        let currentDay = new Date().getDay()
+        let array = $(".week-id").map(function () {
+            return $(this).data("id")
+        })
+        $.each(array, function (index, element) {
+            if (element == currentDay) {
+                $("#weekDays").find("[data-id='" + element + "']").addClass("active")
+            }
+        })
+    }
+
+    $("#weekDays .week-id").on("click", function (event) {
+        let id = $(event.target).data("id");
+        $(".active").removeClass("active")
+        $("#weekDays").find("[data-id='" + id + "']").addClass("active")
+        url = "https://lessons-api-university.herokuapp.com/api/all-lesson-by-week-groupId/" + id + "/" + groupId
+        renderLessons(url)
+    })
+
+    function renderLessons(url) {
+        $.get(url, function (data) {
+            let lessons = ''
+            let typeLesson = ''
+            let typeWeek = ''
+            $.each(data, function (index, lesson) {
+                lessons += `
+                    <tr>
+                        <td scope="row">${lesson.timeLesson}</td>
+                        <td scope="row">${lesson.discipline}</td>
+                        <td scope="row">${lesson.group}</td>
+                        <td scope="row">${lesson.teacher}</td>
+                `
+                if (lesson.isLecture) {
+                    typeLesson = 'Лекция'
+                } else {
+                    typeLesson = 'Лабораторная'
+                }
+                lessons += `<td scope="row">${typeLesson}</td>`
+                if (lesson.weekTypeZnamenatel && lesson.weekTypeChislitel) {
+                    typeWeek = 'Каждую неделю'
+                } else if (lesson.weekTypeZnamenatel) {
+                    typeWeek = 'Знаменатель'
+                } else {
+                    typeWeek = 'Числитель'
+                }
+                lessons += `<td>${typeWeek}</td>`
+                lessons += `<td class="text-center" style="width: 300px">
+                            <a href="${lesson.link}"><img width="38" src="/images/video-call.png"></a>
+                            <a href="${lesson.link2}"><img width="38" src="/images/whats-app.png"></a>
+                        </td>`
+            })
+            document.querySelector("#lessons tbody").innerHTML = lessons
+        })
+    }
+</script>
+</html>
